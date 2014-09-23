@@ -92,8 +92,19 @@ int main () {
   pcnt = 0;
 
   while (1) {
-    // Detect and process a command
     detect:
+    // Make sure timer1 doesn't overflow
+    if (TCNT1 > 244) {
+      TCNT1 = 244;
+    }
+
+    // Clear repeated command after 75ms
+    if (pcnt == 5 && TCNT1 > 73) {
+      prev = 0;
+      pcnt = 0;
+    }
+
+    // Detect and process a command
     if (!(PINB&1)) {
       // Skip to the end of the leader, starting over if idle
       TCNT0 = 0;
@@ -192,17 +203,6 @@ int main () {
       set_wiper(vol);
       disp(voll, left);
       disp(volr, right);
-    }
-
-    // Make sure timer1 doesn't overflow
-    if (TCNT1 > 244) {
-      TCNT1 = 244;
-    }
-
-    // Clear repeated command after 75ms
-    if (pcnt == 5 && TCNT1 > 73) {
-      prev = 0;
-      pcnt = 0;
     }
   }
 
