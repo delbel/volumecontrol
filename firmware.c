@@ -130,7 +130,7 @@ int main () {
               goto detect;
           // Shift in a 1 or 0 depending on length of bit (2.25ms or 1.12ms)
           recv[i] = recv[i]>>1;
-          recv[i] |= TCNT0 > (((lead>>2)+(lead>>3))>>1) ? (1<<7) : 0;
+          recv[i] |= TCNT0 > ((lead+(lead>>1))>>3) ? (1<<7) : 0;
         }
       }
 
