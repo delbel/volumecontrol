@@ -183,7 +183,7 @@ main:
       rjmp decode
       in r16, _SFR_IO_ADDR(TCNT0)
       cpi r16, 0xFF
-      breq ignore
+      breq abort
       rjmp end
 
     ; Ignore command and go back to the top of the main loop
