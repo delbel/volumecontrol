@@ -40,8 +40,8 @@ main:
   in  r2, _SFR_IO_ADDR(SPH)
   ;   r3                               ; Leader length
   ;   r4                               ; Temporary register
-  ;   r5                               ; Unused
-  ;   r6
+  clr r5                               ; Repeated command count
+  ;   r6                               ; Unused
   ;   r7
   ;   r8
   ;   r9
@@ -60,7 +60,7 @@ main:
   ;   r22                              ; Iterator j
   ;   r23                              ; Decoded command
   ldi r24, 244                         ; 250ms on timer1
-  clr r25                              ; Repeated command count
+  ldi r25, 5                           ; 5
   ldi XL, pm_lo8(wval)                 ; Pointer to wval
   ldi XH, pm_hi8(wval)
   lsl XL
@@ -89,13 +89,13 @@ main:
 
     ; Clear repeated command after 75ms
     clrrpt:
-    cpi r25, 5
+    cp r5, r25
     brne detect
     cpi r16, 74
     cpc r17, r0
     brlo detect
     clr r12
-    clr r25
+    clr r5
 
     ; Detect and process a command if IR pin is low
     detect:
@@ -186,10 +186,6 @@ main:
       breq abort
       rjmp end
 
-    ; Ignore command and go back to the top of the main loop
-    ignore:
-      rjmp main1
-
     ; Decode the command
     decode:
     pop r16                            ; Fourth command received byte
@@ -233,7 +229,7 @@ main:
     lds r17, TCNT1H
     cpi r16, 49
     cpc r17, r0
-    brlo ignore
+    brlo done
 
     ; If this command is the same as before, ignore if issued < 250ms
     ; after the previous command unless repeated 5 times
@@ -242,32 +238,28 @@ main:
       cp r16, r24
       cpc r17, r0
       brsh rpt1
-      cpi r25, 5
-      brlo ignore
+      cp r5, r25
+      brlo done
       cpi r23, MUTE
-      breq ignore
+      breq done
     rpt1:
-      cpi r25, 5
-      breq adjv
-      inc r25
+      cpse r5, r25
+      inc r5
       rjmp adjv
     rpt2:
-      clr r25
-      inc r25
+      clr r5
+      inc r5
       mov r12, r23
 
     ; Adjust the volume
     adjv:
-    cpi r23, VOLU
-    breq volu2
     cpi r23, VOLD
     breq vold2
     cpi r23, MUTE
     breq mute2
-    rjmp update
     volu2:                             ; Volume up
       cpi r18, 99
-      breq update
+      breq done
       inc r18
       inc r20
       cpi r20, 10
@@ -277,7 +269,7 @@ main:
       rjmp update
     vold2:                             ; Volume down
       cpi r18, 0
-      breq update
+      breq done
       dec r18
       dec r20
       cpi r20, 0xFF
@@ -311,6 +303,7 @@ main:
     rcall disp
 
     ; Go back to the top of the main loop
+    done:
     rjmp main1
 
 ; Sets wiper to value in r18
