@@ -7,10 +7,14 @@ typedef enum {
   right
 } pos;
 
-const uint8_t cust = 0x07; // Custom code
-const uint8_t volu = 0x07; // Volume up code
-const uint8_t vold = 0x0B; // Volume down code
-const uint8_t mute = 0x0F; // Mute code
+const uint8_t cust = 0x30;  // Custom code 1
+const uint8_t cust2 = 0x0F; // Custom code 2
+const uint8_t volu = 0xE1;  // Volume up code 1
+const uint8_t volu2 = 0x0E; // Volume up code 2
+const uint8_t vold = 0x01;  // Volume down code 1
+const uint8_t vold2 = 0xEF; // Volume down code 2
+const uint8_t mute = 0x21;  // Mute code 1
+const uint8_t mute2 = 0xCE; // Mute code 2
 
 // Volume to wiper value lookup table (logarithmic)
 const uint8_t wval[100] = {  0,   1,   1,   2,   2,   3,   4,   4,   5,   6,
@@ -30,13 +34,13 @@ const uint8_t dseg[11] = {0x01, 0x8F, 0x12, 0x06, 0x8C,
 
 // Return the received command (0 for unrecognized)
 inline uint8_t decode (uint8_t recv[4]) {
-  if (recv[0] != cust || recv[1] != cust)
+  if (recv[0] != cust || recv[1] != cust2)
     return 0;
-  if (recv[2] == volu && recv[3] == (uint8_t)(~volu))
+  if (recv[2] == volu && recv[3] == volu2)
     return volu;
-  if (recv[2] == vold && recv[3] == (uint8_t)(~vold))
+  if (recv[2] == vold && recv[3] == vold2)
     return vold;
-  if (recv[2] == mute && recv[3] == (uint8_t)(~mute))
+  if (recv[2] == mute && recv[3] == mute2)
     return mute;
   return 0;
 }
